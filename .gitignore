@@ -1,0 +1,47 @@
+# Build artifacts — produced by `make build` and `goreleaser` locally.
+# Released binaries land on GitHub Releases via the workflow, not in git.
+bin/
+dist/
+build/
+
+# Go test / coverage / profile output.
+coverage.out
+coverage.html
+*.test
+*.out
+*.prof
+
+# Editor / OS junk that has no business in the repo.
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local-only env / credentials. We use the keyring + ~/.config/arara/config.toml
+# in prod; anything matching these patterns is almost always a personal token
+# someone forgot to delete before staging.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# Logs from local runs.
+*.log
+
+# Air / live-reload caches (some contributors use it).
+tmp/
+.air.toml
+
+# Go module download cache (when GOPATH is rooted in the repo by accident).
+go.sum.tmp
+
+# goreleaser snapshot output.
+.goreleaser-snapshot/
+
+# Stray dev artifacts that shouldn't ship.
+/arara
+*.bck.yml

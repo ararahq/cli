@@ -1,0 +1,132 @@
+version: 2
+
+project_name: arara
+
+before:
+  hooks:
+    - go mod tidy
+    - go run ./cmd/arara generate-manpages build/man
+
+builds:
+  - id: arara
+    main: ./cmd/arara/
+    binary: arara
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X github.com/ararahq/cli/internal/version.Version={{.Version}}
+      - -X github.com/ararahq/cli/internal/version.Commit={{.ShortCommit}}
+      - -X github.com/ararahq/cli/internal/version.Date={{.Date}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    files:
+      - LICENSE
+      - README.md
+      - src: build/man/*.1
+        dst: man
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+brews:
+  - name: arara
+    repository:
+      owner: ararahq
+      name: homebrew-tap
+    description: "AraraHQ CLI — WhatsApp API Platform"
+    homepage: "https://github.com/ararahq/cli"
+    license: "MIT"
+    install: |
+      bin.install "arara"
+      man1.install Dir["man/arara*.1"]
+      generate_completions_from_executable(bin/"arara", "completion")
+    test: |
+      system "#{bin}/arara", "--version"
+
+scoops:
+  - name: arara
+    repository:
+      owner: ararahq
+      name: scoop-bucket
+    description: "AraraHQ CLI — WhatsApp API Platform"
+    homepage: "https://github.com/ararahq/cli"
+    license: "MIT"
+
+dockers:
+  - id: arara-amd64
+    image_templates:
+      - "ararahq/arara:{{ .Version }}-amd64"
+      - "ararahq/arara:latest-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title=arara"
+      - "--label=org.opencontainers.image.description=AraraHQ CLI"
+      - "--label=org.opencontainers.image.source=https://github.com/ararahq/cli"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+  - id: arara-arm64
+    image_templates:
+      - "ararahq/arara:{{ .Version }}-arm64"
+      - "ararahq/arara:latest-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title=arara"
+      - "--label=org.opencontainers.image.description=AraraHQ CLI"
+      - "--label=org.opencontainers.image.source=https://github.com/ararahq/cli"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+docker_manifests:
+  - name_template: "ararahq/arara:{{ .Version }}"
+    image_templates:
+      - "ararahq/arara:{{ .Version }}-amd64"
+      - "ararahq/arara:{{ .Version }}-arm64"
+  - name_template: "ararahq/arara:latest"
+    image_templates:
+      - "ararahq/arara:latest-amd64"
+      - "ararahq/arara:latest-arm64"
+
+nfpms:
+  - id: arara-pkgs
+    package_name: arara
+    vendor: AraraHQ
+    homepage: "https://github.com/ararahq/cli"
+    maintainer: "AraraHQ <support@ararahq.com>"
+    description: "AraraHQ CLI — WhatsApp API Platform"
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    contents:
+      - src: build/man/*.1
+        dst: /usr/share/man/man1
+        file_info:
+          mode: 0644
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: ararahq
+    name: arara-cli

@@ -1,0 +1,61 @@
+package api
+
+import (
+	"fmt"
+)
+
+const (
+	// #nosec G101 -- HTTP path constant, not a credential.
+	apiKeysBasePath = "/v1/api-keys"
+)
+
+type APIKeyInfo struct {
+	ID         string `json:"id"`
+	Prefix     string `json:"prefix"`
+	LastFour   string `json:"lastFour"`
+	Mode       string `json:"mode"`
+	CreatedAt  string `json:"createdAt"`
+	LastUsedAt string `json:"lastUsedAt,omitempty"`
+}
+
+type GeneratedAPIKey struct {
+	PlainTextKey string `json:"plainTextKey"`
+}
+
+func (client *Client) ListAPIKeys() ([]APIKeyInfo, error) {
+	var apiKeys []APIKeyInfo
+	if getError := client.Get(apiKeysBasePath, &apiKeys); getError != nil {
+		return nil, fmt.Errorf("failed to list API keys: %w", getError)
+	}
+
+	return apiKeys, nil
+}
+
+func (client *Client) CreateAPIKey(mode string) (*GeneratedAPIKey, error) {
+	if mode == "" {
+		return nil, fmt.Errorf("mode cannot be empty — use 'live' or 'test'")
+	}
+
+	path := fmt.Sprintf("%s?mode=%s", apiKeysBasePath, mode)
+
+	var generatedKey GeneratedAPIKey
+	if postError := client.Post(path, nil, &generatedKey); postError != nil {
+		return nil, fmt.Errorf("failed to create API key: %w", postError)
+	}
+
+	return &generatedKey, nil
+}
+
+func (client *Client) RevokeAPIKey(keyID string) error {
+	if keyID == "" {
+		return fmt.Errorf("API key ID cannot be empty")
+	}
+
+	path := fmt.Sprintf("%s/%s", apiKeysBasePath, keyID)
+
+	if deleteError := client.Delete(path); deleteError != nil {
+		return fmt.Errorf("failed to revoke API key: %w", deleteError)
+	}
+
+	return nil
+}

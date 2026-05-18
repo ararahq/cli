@@ -1,0 +1,32 @@
+{
+  "name": "@ararahq/cli",
+  "version": "0.0.0",
+  "description": "AraraHQ CLI — WhatsApp API Platform. This package downloads the matching native Go binary on install.",
+  "bin": {
+    "arara": "bin/arara"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "keywords": [
+    "ararahq",
+    "whatsapp",
+    "cli",
+    "messaging"
+  ],
+  "author": "AraraHQ <support@ararahq.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/ararahq/cli",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ararahq/cli.git"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "install.js",
+    "bin/",
+    "README.md"
+  ]
+}

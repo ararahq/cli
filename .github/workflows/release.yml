@@ -1,0 +1,68 @@
+name: release
+
+# Fires only when a version tag is pushed. Manual `workflow_dispatch` is
+# kept off on purpose — releases must be deliberate (tag → push → build),
+# never accidental clicks in the GitHub UI.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write       # create the GitHub Release + upload archives
+  packages: write       # push docker images to ghcr.io if/when enabled
+  id-token: write       # cosign keyless signing (future)
+
+jobs:
+  goreleaser:
+    name: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # goreleaser inspects the full git history for changelog
+          # generation; the default shallow checkout would produce an
+          # empty release notes section.
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Docker images are part of the goreleaser config (arara-amd64 +
+      # arara-arm64 → ararahq/arara). We log in here so the manifests
+      # land in Docker Hub on tag push. The TAP_GITHUB_TOKEN secret is
+      # what goreleaser uses to commit Formula/manifest files into the
+      # external repos (ararahq/homebrew-tap, ararahq/scoop-bucket).
+      - name: Log into Docker Hub
+        if: env.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          # Default token can create the release on this repo. The
+          # external tap/bucket repos need a PAT with `repo` scope
+          # because the default GITHUB_TOKEN is scoped to the current
+          # repo only. Fall back to the default when TAP token isn't
+          # set so the workflow still produces a release (just without
+          # the Homebrew/Scoop side effects).
+          GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN != '' && secrets.TAP_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
