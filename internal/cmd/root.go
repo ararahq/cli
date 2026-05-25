@@ -46,6 +46,7 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(command *cobra.Command, arguments []string) {
 		applyGlobalFlags()
 		commandStartTimes.Store(command, time.Now())
+		maybePrintOAuthNudge(command)
 	},
 	PersistentPostRunE: func(command *cobra.Command, arguments []string) error {
 		recordCommandTelemetry(command, 0)
