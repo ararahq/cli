@@ -29,11 +29,6 @@ var (
 	sPillDanger  = pillBase.Foreground(lipgloss.Color(cRed))
 	sPillInfo    = pillBase.Foreground(lipgloss.Color(cBrandHi))
 	sPillNeutral = pillBase.Foreground(lipgloss.Color(cMuted))
-	sPillBrand   = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color(cAccent)).
-			Background(lipgloss.Color(cBrandDeep)).
-			Padding(0, 1)
 )
 
 // templateStatusBadge maps a provider-status string to its semantic pill.

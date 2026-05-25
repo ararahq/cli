@@ -1123,36 +1123,6 @@ func renderTemplateDetail(tpl api.Template) string {
 	return strings.TrimRight(b.String(), "\n")
 }
 
-// renderTemplatesTable lays out the template list as a real columnar table
-// using lipgloss/table — the previous implementation used printf
-// `%-12s` padding, which counts ANSI escape bytes as visible chars and
-// produced misaligned columns whenever a cell had styled (coloured) text.
-// Lipgloss handles ANSI-aware width internally, so styled cells stay
-// aligned across rows.
-//
-// Visual hierarchy per row:
-//   NAME      → bright accent, bold (the thing the user is hunting for)
-//   STATUS    → tinted pill (✓ APPROVED / ⧗ PENDING / ✘ REJECTED)
-//   CATEGORY  → glyph + colour by category (▸ marketing, ⚿ auth, ◆ utility)
-//   LANG      → dim (least important)
-//   UPDATED   → dim (chronological cue without stealing focus)
-func renderTemplatesTable(templates []api.Template) string {
-	rows := make([][]string, 0, len(templates))
-	for _, template := range templates {
-		rows = append(rows, []string{
-			templateNameCell(template.Name),
-			templateStatusBadge(template.ProviderStatus),
-			formatCategoryCell(template.Category),
-			sDim.Render(template.Language),
-		})
-	}
-	return renderREPLTable("",
-		len(templates),
-		[]string{"NAME", "STATUS", "CATEGORY", "LANG"},
-		rows,
-	)
-}
-
 // templateNameCell renders the template name with a leading dot in the
 // brand colour so each row gets a left-anchor that the eye uses to find
 // the row beginning when scanning a long list.
@@ -1295,7 +1265,7 @@ func (repl REPLModel) executeKeysListCommand() tea.Cmd {
 		}
 		return commandResultMsg{
 			title:  fmt.Sprintf("API Keys · %d", len(apiKeys)),
-			output: renderREPLTable("", len(apiKeys), []string{"KEY", "MODE", "CREATED"}, rows),
+			output: renderREPLTable(len(apiKeys), []string{"KEY", "MODE", "CREATED"}, rows),
 		}
 	}
 }
@@ -1350,7 +1320,7 @@ func (repl REPLModel) executeLogsCommand() tea.Cmd {
 
 		return commandResultMsg{
 			title:  fmt.Sprintf("Recent Messages · %d", len(rows)),
-			output: renderREPLTable("", len(rows), []string{"STATUS", "PHONE", "TEMPLATE", "TIME"}, rows),
+			output: renderREPLTable(len(rows), []string{"STATUS", "PHONE", "TEMPLATE", "TIME"}, rows),
 		}
 	}
 }
@@ -1606,7 +1576,7 @@ func (repl REPLModel) executeContactsListCommand(query string) tea.Cmd {
 			})
 		}
 
-		table := renderREPLTable("", int(response.Total),
+		table := renderREPLTable(int(response.Total),
 			[]string{"NAME", "PHONE", "EMAIL", "CREATED"}, rows)
 
 		if response.TotalPages > 1 {
@@ -1680,7 +1650,7 @@ func (repl REPLModel) executeNumbersCommand() tea.Cmd {
 
 		return commandResultMsg{
 			title:  fmt.Sprintf("Phone Numbers · %d", len(numbers)),
-			output: renderREPLTable("", len(numbers), []string{"", "PHONE", "NAME"}, rows),
+			output: renderREPLTable(len(numbers), []string{"", "PHONE", "NAME"}, rows),
 		}
 	}
 }
