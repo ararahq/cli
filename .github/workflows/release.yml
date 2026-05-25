@@ -47,17 +47,31 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
       - name: Set up QEMU
+        if: env.DOCKERHUB_USERNAME != ''
         uses: docker/setup-qemu-action@v3
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
       - name: Set up Docker Buildx
+        if: env.DOCKERHUB_USERNAME != ''
         uses: docker/setup-buildx-action@v3
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
+      - name: Compute goreleaser skip flags
+        id: skip
+        run: |
+          flags=""
+          [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ] && flags="$flags --skip=docker"
+          [ -z "${{ secrets.TAP_GITHUB_TOKEN }}" ] && flags="$flags --skip=homebrew,scoop"
+          echo "flags=$flags" >> "$GITHUB_OUTPUT"
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean
+          args: release --clean ${{ steps.skip.outputs.flags }}
         env:
           # Default token can create the release on this repo. The
           # external tap/bucket repos need a PAT with `repo` scope

@@ -1,0 +1,10 @@
+name = "arara-install-cli"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# Custom domain attached via dashboard:
+#   get.ararahq.com → this worker
+# Worker handles:
+#   GET /install-cli       → install.sh (Unix)
+#   GET /install-cli.ps1   → install.ps1 (Windows)
+#   GET /                  → redirect to docs.ararahq.com/cli
