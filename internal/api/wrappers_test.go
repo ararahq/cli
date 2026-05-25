@@ -137,11 +137,14 @@ func TestWrappers_HappyPaths(t *testing.T) {
 	if _, err := client.ListAPIKeys(); err != nil {
 		t.Errorf("ListAPIKeys: %v", err)
 	}
-	if _, err := client.CreateAPIKey("test"); err != nil {
+	if _, err := client.CreateAPIKey("test", "ci-test"); err != nil {
 		t.Errorf("CreateAPIKey: %v", err)
 	}
-	if _, err := client.CreateAPIKey(""); err == nil {
+	if _, err := client.CreateAPIKey("", "ci-test"); err == nil {
 		t.Error("CreateAPIKey must reject empty mode")
+	}
+	if _, err := client.CreateAPIKey("test", ""); err == nil {
+		t.Error("CreateAPIKey must reject empty name")
 	}
 	if err := client.RevokeAPIKey("k1"); err != nil {
 		t.Errorf("RevokeAPIKey: %v", err)
@@ -242,7 +245,7 @@ func TestWrappers_ServerErrorBubblesUp(t *testing.T) {
 		}},
 		{"GetContactStats", func() error { _, err := client.GetContactStats(); return err }},
 		{"ListAPIKeys", func() error { _, err := client.ListAPIKeys(); return err }},
-		{"CreateAPIKey", func() error { _, err := client.CreateAPIKey("test"); return err }},
+		{"CreateAPIKey", func() error { _, err := client.CreateAPIKey("test", "n"); return err }},
 		{"RevokeAPIKey", func() error { return client.RevokeAPIKey("k1") }},
 		{"ListNumbers", func() error { _, err := client.ListNumbers(); return err }},
 		{"CreateCampaign", func() error {

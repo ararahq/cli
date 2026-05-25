@@ -31,15 +31,19 @@ func (client *Client) ListAPIKeys() ([]APIKeyInfo, error) {
 	return apiKeys, nil
 }
 
-func (client *Client) CreateAPIKey(mode string) (*GeneratedAPIKey, error) {
+func (client *Client) CreateAPIKey(mode, name string) (*GeneratedAPIKey, error) {
 	if mode == "" {
 		return nil, fmt.Errorf("mode cannot be empty — use 'live' or 'test'")
 	}
+	if name == "" {
+		return nil, fmt.Errorf("name cannot be empty — describe where the key will be used")
+	}
 
 	path := fmt.Sprintf("%s?mode=%s", apiKeysBasePath, mode)
+	body := map[string]string{"name": name}
 
 	var generatedKey GeneratedAPIKey
-	if postError := client.Post(path, nil, &generatedKey); postError != nil {
+	if postError := client.Post(path, body, &generatedKey); postError != nil {
 		return nil, fmt.Errorf("failed to create API key: %w", postError)
 	}
 
