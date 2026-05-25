@@ -8,10 +8,10 @@ import (
 
 // browsableResult is what a list-style command produces when its rows can
 // be drilled into. The REPL keeps a stack of these so the user can:
-//   1. Run `templates`           → table appears, cursor lands on row 0
-//   2. ↓ ↓ ↓                     → cursor moves through the table
-//   3. Enter                     → detail of the selected row replaces table
-//   4. Esc / q                   → table returns, cursor preserved
+//  1. Run `templates`           → table appears, cursor lands on row 0
+//  2. ↓ ↓ ↓                     → cursor moves through the table
+//  3. Enter                     → detail of the selected row replaces table
+//  4. Esc / q                   → table returns, cursor preserved
 //
 // Each row carries an opaque ID (the field the detail fetcher consumes)
 // alongside its pre-styled cell strings. detailFunc receives that ID and
@@ -73,7 +73,7 @@ func renderBrowsableTable(state drillState) string {
 		styledRows = append(styledRows, cells)
 	}
 
-	return renderREPLTable("", len(state.result.rows), state.result.columns, styledRows)
+	return renderREPLTable(len(state.result.rows), state.result.columns, styledRows)
 }
 
 // decorateCursorCell replaces the standard "• " left-anchor with a teal
