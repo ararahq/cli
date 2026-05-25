@@ -19,7 +19,10 @@ const (
 	keysResultPadding = 12
 )
 
-var keysCreateModeFlag string
+var (
+	keysCreateModeFlag string
+	keysCreateNameFlag string
+)
 
 var keysCmd = &cobra.Command{
 	Use:   "keys",
@@ -48,6 +51,7 @@ var keysRevokeCmd = &cobra.Command{
 
 func init() {
 	keysCreateCmd.Flags().StringVar(&keysCreateModeFlag, "mode", defaultKeyMode, "key mode: LIVE or TEST")
+	keysCreateCmd.Flags().StringVar(&keysCreateNameFlag, "name", "", "human-readable label (defaults to cli-<hostname>)")
 
 	keysCmd.AddCommand(keysListCmd)
 	keysCmd.AddCommand(keysCreateCmd)
@@ -101,11 +105,22 @@ func runKeysCreate(command *cobra.Command, arguments []string) error {
 	}
 
 	client.SetVerbose(IsVerbose())
-	return runKeysCreateImpl(client, GetOutputFormat(), os.Stdout, normalizedMode)
+	return runKeysCreateImpl(client, GetOutputFormat(), os.Stdout, normalizedMode, resolveKeyName(keysCreateNameFlag))
 }
 
-func runKeysCreateImpl(client *api.Client, format output.Format, writer io.Writer, normalizedMode string) error {
-	generatedKey, createError := client.CreateAPIKey(normalizedMode)
+func resolveKeyName(flag string) string {
+	if trimmed := strings.TrimSpace(flag); trimmed != "" {
+		return trimmed
+	}
+	hostname, hostError := os.Hostname()
+	if hostError != nil || hostname == "" {
+		return "cli"
+	}
+	return "cli-" + hostname
+}
+
+func runKeysCreateImpl(client *api.Client, format output.Format, writer io.Writer, normalizedMode, name string) error {
+	generatedKey, createError := client.CreateAPIKey(normalizedMode, name)
 	if createError != nil {
 		return fmt.Errorf("create API key: %w", createError)
 	}

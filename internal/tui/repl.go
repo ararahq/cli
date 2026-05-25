@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -422,6 +423,14 @@ func renderModeBadge(mode string) string {
 		return sLiveBadge.Render(" LIVE ")
 	}
 	return sTestBadge.Render(" TEST ")
+}
+
+func replKeyName() string {
+	hostname, err := os.Hostname()
+	if err != nil || hostname == "" {
+		return "cli"
+	}
+	return "cli-" + hostname
 }
 
 // ── Output Area ──────────────────────────────────────────────────
@@ -1226,7 +1235,7 @@ func (repl REPLModel) executeKeysCreateCommand(modeArg string) tea.Cmd {
 			return commandErrorMsg{errorText: "Usage: keys create <LIVE|TEST>"}
 		}
 
-		generatedKey, createError := repl.apiClient.CreateAPIKey(mode)
+		generatedKey, createError := repl.apiClient.CreateAPIKey(mode, replKeyName())
 		if createError != nil {
 			return commandErrorMsg{errorText: fmt.Sprintf("Failed to create key: %s", createError.Error())}
 		}

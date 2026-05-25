@@ -105,7 +105,7 @@ func TestRunKeysCreateImpl_GoldenPathRendersKey(t *testing.T) {
 	_, client := fakeAPIServerJSON(t, http.StatusCreated, body)
 	buffer := &bytes.Buffer{}
 
-	if err := runKeysCreateImpl(client, output.FormatText, buffer, "LIVE"); err != nil {
+	if err := runKeysCreateImpl(client, output.FormatText, buffer, "LIVE", "test-key"); err != nil {
 		t.Fatalf("err: %v", err)
 	}
 	if !strings.Contains(buffer.String(), "ara_live_brandnewfreshkeyxyz") {
@@ -118,7 +118,7 @@ func TestRunKeysCreateImpl_JSONOutput(t *testing.T) {
 	_, client := fakeAPIServerJSON(t, http.StatusOK, body)
 	buffer := &bytes.Buffer{}
 
-	if err := runKeysCreateImpl(client, output.FormatJSON, buffer, "TEST"); err != nil {
+	if err := runKeysCreateImpl(client, output.FormatJSON, buffer, "TEST", "test-key"); err != nil {
 		t.Fatalf("err: %v", err)
 	}
 	if !strings.Contains(buffer.String(), `"plainTextKey"`) {
