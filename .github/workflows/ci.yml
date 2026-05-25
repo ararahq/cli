@@ -24,7 +24,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.64.5
+          version: v2.12.2
           args: --timeout=5m
 
   vuln:
@@ -55,8 +55,10 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: build
+        shell: bash
         run: go build ./...
       - name: test
+        shell: bash
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       - name: upload coverage
         if: matrix.os == 'ubuntu-latest'

@@ -129,4 +129,4 @@ checksum:
 release:
   github:
     owner: ararahq
-    name: arara-cli
+    name: cli
