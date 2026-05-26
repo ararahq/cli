@@ -1007,17 +1007,36 @@ func (repl REPLModel) executeSendCommand(arguments string) tea.Cmd {
 	}
 }
 
+// parseSendArgs aceita duas sintaxes (compat com `arara send` shell + REPL):
+//
+//	send +5511999 -t welcome           (posicional + flags curtas)
+//	send --to +5511999 --template w    (estilo CLI shell)
+//	send +5511999 Hello there          (freeform — janela 24h obrigatória)
+//
+// Flag desconhecida vira erro de uso, não silenciosamente "freeform" — evita
+// que `--to <phone>` (estilo CLI) seja interpretado como texto livre e mandado
+// pra processSessionMessage no backend.
 func parseSendArgs(arguments string) (phone string, templateName string, variables []string, freeformText string) {
 	parts := strings.Fields(arguments)
 	if len(parts) == 0 {
 		return
 	}
 
-	phone = parts[0]
-	remaining := parts[1:]
+	remaining := parts
+	if !strings.HasPrefix(parts[0], "-") {
+		phone = parts[0]
+		remaining = parts[1:]
+	}
 
+	freeformParts := make([]string, 0, len(remaining))
 	for index := 0; index < len(remaining); index++ {
-		switch remaining[index] {
+		token := remaining[index]
+		switch token {
+		case "--to":
+			if index+1 < len(remaining) {
+				index++
+				phone = remaining[index]
+			}
 		case "-t", "--template":
 			if index+1 < len(remaining) {
 				index++
@@ -1029,10 +1048,22 @@ func parseSendArgs(arguments string) (phone string, templateName string, variabl
 				variables = strings.Split(remaining[index], ",")
 			}
 		default:
-			// everything else is freeform text
-			freeformText = strings.Join(remaining[index:], " ")
-			return
+			if strings.HasPrefix(token, "-") {
+				// flag desconhecida — devolve como freeformText pra REPL
+				// mostrar erro de uso; nunca tratar silenciosamente como texto.
+				freeformText = ""
+				freeformParts = nil
+				phone = ""
+				templateName = ""
+				variables = nil
+				return
+			}
+			freeformParts = append(freeformParts, token)
 		}
+	}
+
+	if templateName == "" && len(freeformParts) > 0 {
+		freeformText = strings.Join(freeformParts, " ")
 	}
 	return
 }
