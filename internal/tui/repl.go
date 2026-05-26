@@ -1009,7 +1009,7 @@ func (repl REPLModel) executeSendCommand(arguments string) tea.Cmd {
 
 // parseSendArgs aceita duas sintaxes (compat com `arara send` shell + REPL):
 //
-//	send +5511999 -t welcome           (posicional + flags curtas)
+//	send +5511999 -t welcome           (positional + short flags)
 //	send --to +5511999 --template w    (estilo CLI shell)
 //	send +5511999 Hello there          (freeform — janela 24h obrigatória)
 //
@@ -1049,14 +1049,9 @@ func parseSendArgs(arguments string) (phone string, templateName string, variabl
 			}
 		default:
 			if strings.HasPrefix(token, "-") {
-				// flag desconhecida — devolve como freeformText pra REPL
-				// mostrar erro de uso; nunca tratar silenciosamente como texto.
-				freeformText = ""
-				freeformParts = nil
-				phone = ""
-				templateName = ""
-				variables = nil
-				return
+				// flag desconhecida — devolve zero values pra REPL mostrar
+				// erro de uso; nunca tratar silenciosamente como texto.
+				return "", "", nil, ""
 			}
 			freeformParts = append(freeformParts, token)
 		}

@@ -63,7 +63,7 @@ func TestParseSendArgs(t *testing.T) {
 			if templateName != testCase.wantTemplateName {
 				t.Errorf("templateName = %q, want %q", templateName, testCase.wantTemplateName)
 			}
-			if !reflect.DeepEqual(variables, testCase.wantVariables) && !(len(variables) == 0 && len(testCase.wantVariables) == 0) {
+			if !reflect.DeepEqual(variables, testCase.wantVariables) && (len(variables) != 0 || len(testCase.wantVariables) != 0) {
 				t.Errorf("variables = %v, want %v", variables, testCase.wantVariables)
 			}
 			if freeformText != testCase.wantFreeformText {
