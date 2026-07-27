@@ -86,6 +86,69 @@ func TestAPIError_FriendlyMessage(t *testing.T) {
 	}
 }
 
+func TestParseErrorResponse_ReadsDiagnosticCode(t *testing.T) {
+	body := []byte(`{"error":{"code":"UNPROCESSABLE_ENTITY","message":"Janela de 24h fechada.",` +
+		`"details":{"diagnostic":{"code":"ararahq-63016","whatHappened":"Janela fechada.",` +
+		`"howToAct":"Envie um template."}}}}`)
+	got := ParseErrorResponse(http.StatusUnprocessableEntity, body)
+
+	if got.Code != "UNPROCESSABLE_ENTITY" {
+		t.Errorf("envelope code should be preserved, got %q", got.Code)
+	}
+	if got.DiagnosticCode != errorCodeWindowClosed {
+		t.Errorf("diagnostic code: want %q, got %q", errorCodeWindowClosed, got.DiagnosticCode)
+	}
+	if got.BusinessCode() != errorCodeWindowClosed {
+		t.Errorf("business code should prefer the diagnostic, got %q", got.BusinessCode())
+	}
+	if !strings.Contains(got.FriendlyMessage(), "Janela de 24h fechada. Envie um template primeiro.") {
+		t.Errorf("friendly message should be reachable, got %q", got.FriendlyMessage())
+	}
+}
+
+func TestParseErrorResponse_UnknownDiagnosticFallsBackToHint(t *testing.T) {
+	body := []byte(`{"error":{"code":"UNPROCESSABLE_ENTITY","message":"[131037]",` +
+		`"details":{"diagnostic":{"code":"ararahq-display-name",` +
+		`"whatHappened":"Nome de exibicao nao aprovado.","howToAct":"Peca a aprovacao."}}}}`)
+	got := ParseErrorResponse(http.StatusUnprocessableEntity, body)
+
+	if got.BusinessCode() != "ararahq-display-name" {
+		t.Errorf("business code: got %q", got.BusinessCode())
+	}
+	want := "Nome de exibicao nao aprovado. Peca a aprovacao."
+	if got.FriendlyMessage() != want {
+		t.Errorf("friendly message: want %q, got %q", want, got.FriendlyMessage())
+	}
+}
+
+func TestParseErrorResponse_DetailsWithoutDiagnostic(t *testing.T) {
+	body := []byte(`{"error":{"code":"PLAN_FEATURE_LOCKED","message":"Faca upgrade.",` +
+		`"details":{"feature":"campaigns","currentPlan":"FREE","upgradeTo":"VOO"}}}`)
+	got := ParseErrorResponse(http.StatusForbidden, body)
+
+	if got.BusinessCode() != "PLAN_FEATURE_LOCKED" {
+		t.Errorf("business code should fall back to the envelope code, got %q", got.BusinessCode())
+	}
+	if got.DiagnosticCode != "" {
+		t.Errorf("no diagnostic expected, got %q", got.DiagnosticCode)
+	}
+	if got.FriendlyMessage() != "Faca upgrade." {
+		t.Errorf("friendly message: got %q", got.FriendlyMessage())
+	}
+}
+
+func TestParseErrorResponse_NonObjectDetailsKeepsCode(t *testing.T) {
+	body := []byte(`{"error":{"code":"VALIDATION_ERROR","message":"invalido","details":["campo"]}}`)
+	got := ParseErrorResponse(http.StatusBadRequest, body)
+
+	if got.Code != "VALIDATION_ERROR" {
+		t.Errorf("unexpected details shape must not lose the code, got %q", got.Code)
+	}
+	if got.DiagnosticCode != "" {
+		t.Errorf("no diagnostic expected, got %q", got.DiagnosticCode)
+	}
+}
+
 func TestIsAuthError(t *testing.T) {
 	if !IsAuthError(&APIError{StatusCode: http.StatusUnauthorized}) {
 		t.Error("401 should be auth error")
