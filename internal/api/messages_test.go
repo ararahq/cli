@@ -30,6 +30,45 @@ func TestEnsurePhonePrefix(t *testing.T) {
 	}
 }
 
+func TestSendMessageRequest_SerializesScheduledAtAsSnakeCase(t *testing.T) {
+	encoded, marshalErr := json.Marshal(SendMessageRequest{
+		Receiver:     "whatsapp:+5511999999999",
+		TemplateName: "hello",
+		ScheduledAt:  "2026-01-01T00:00:00Z",
+	})
+	if marshalErr != nil {
+		t.Fatalf("marshal: %v", marshalErr)
+	}
+
+	var wire map[string]any
+	if err := json.Unmarshal(encoded, &wire); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	if wire["scheduled_at"] != "2026-01-01T00:00:00Z" {
+		t.Errorf("backend binds scheduled_at, got payload %s", encoded)
+	}
+	if _, hasCamelCase := wire["scheduledAt"]; hasCamelCase {
+		t.Errorf("scheduledAt is dropped silently by the backend, got payload %s", encoded)
+	}
+}
+
+func TestSendMessageRequest_OmitsScheduledAtWhenEmpty(t *testing.T) {
+	encoded, marshalErr := json.Marshal(SendMessageRequest{Receiver: "whatsapp:+5511", Body: "hi"})
+	if marshalErr != nil {
+		t.Fatalf("marshal: %v", marshalErr)
+	}
+
+	var wire map[string]any
+	if err := json.Unmarshal(encoded, &wire); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	if _, present := wire["scheduled_at"]; present {
+		t.Errorf("empty schedule must not be sent, got payload %s", encoded)
+	}
+}
+
 func TestMessageResponse_UnmarshalNullIDAsEmpty(t *testing.T) {
 	body := `{"id":null,"status":"queued","receiver":"+5511","mode":"test"}`
 	var response MessageResponse
