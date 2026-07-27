@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -97,7 +98,11 @@ func classifyCaptureError(err error) error {
 		return ErrCaptureNotSupported
 	}
 
-	if apiError.StatusCode == http.StatusConflict && apiError.Code == "capture_listener_active" {
+	// EqualFold porque o backend emite CAPTURE_LISTENER_ACTIVE em maiusculo
+	// (GlobalExceptionHandler.kt) e a comparacao exata em minusculo nunca casava: o usuario via
+	// um conflito generico em vez de quem esta com o listener e ate quando.
+	if apiError.StatusCode == http.StatusConflict &&
+		strings.EqualFold(apiError.Code, "CAPTURE_LISTENER_ACTIVE") {
 		return &CaptureConflictError{
 			ListenerID: stringFromDetails(apiError, "listenerId"),
 			Owner:      stringFromDetails(apiError, "owner"),

@@ -432,7 +432,7 @@ func TestRunListenCapture_PropagatesConflict(t *testing.T) {
 		if r.URL.Path == "/v1/cli/webhook-listeners" && r.Method == http.MethodPost {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusConflict)
-			_, _ = w.Write([]byte(`{"error":{"code":"capture_listener_active","message":"taken","details":{"listenerId":"lst_other","owner":"laptop@there","expiresAt":"2026-12-01T00:00:00Z"}}}`))
+			_, _ = w.Write([]byte(`{"error":{"code":"CAPTURE_LISTENER_ACTIVE","message":"taken","details":{"listenerId":"lst_other","owner":"laptop@there","expiresAt":"2026-12-01T00:00:00Z"}}}`))
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)

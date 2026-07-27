@@ -12,12 +12,17 @@ const (
 	messagesBasePath      = "/v1/messages"
 )
 
+// SendMessageRequest mirrors the Kotlin SendMessageRequest DTO. Every field is
+// camelCase except scheduledAt, which the backend binds with
+// @JsonProperty("scheduled_at") and no @JsonAlias. Sending "scheduledAt" is
+// dropped silently (FAIL_ON_UNKNOWN_PROPERTIES is off), so the message goes out
+// immediately and the caller never sees an error.
 type SendMessageRequest struct {
 	Receiver          string   `json:"receiver"`
 	TemplateName      string   `json:"templateName,omitempty"`
 	TemplateVariables []string `json:"variables,omitempty"`
 	Body              string   `json:"body,omitempty"`
-	ScheduledAt       string   `json:"scheduledAt,omitempty"`
+	ScheduledAt       string   `json:"scheduled_at,omitempty"`
 }
 
 type DryRunPreview struct {

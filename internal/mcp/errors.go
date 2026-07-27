@@ -64,7 +64,7 @@ func classifyError(err error) toolErrorBody {
 	var apiError *api.APIError
 	if errors.As(err, &apiError) {
 		body := toolErrorBody{
-			Code:    apiError.Code,
+			Code:    apiError.BusinessCode(),
 			Message: apiError.FriendlyMessage(),
 		}
 		if apiError.StatusCode == httpTooManyRequests || apiError.StatusCode >= 500 {

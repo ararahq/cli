@@ -61,7 +61,7 @@ func TestCreateWebhookListener_409ReturnsTypedConflict(t *testing.T) {
 		w.WriteHeader(http.StatusConflict)
 		_, _ = w.Write([]byte(`{
 			"error":{
-				"code":"capture_listener_active",
+				"code":"CAPTURE_LISTENER_ACTIVE",
 				"message":"another CLI session is already capturing for this org",
 				"details":{
 					"listenerId":"lst_existing",
