@@ -85,21 +85,6 @@ flow). Both are treated as bearer secrets.
 - Bearer tokens go in the `Authorization` header, never in the URL or
   query string.
 
-### Webhook Capture Secrets (`arara listen --capture`)
-
-When you start a CLI capture listener, the backend issues a one-shot
-signing secret (`wh_cli_…`). This secret:
-
-- Is shown **once** in the create-response and printed to the terminal.
-- Lives in the CLI process memory only — **not** written to disk, the
-  keyring, or anywhere else.
-- Dies when the process exits. There is no recovery.
-
-If your terminal scrollback is captured (shared session, screen
-recording), treat the secret as compromised and re-run the capture
-command to rotate it. Capture sessions are also bounded by TTL (default
-60 min) on the backend.
-
 ## Known Risks
 
 These are documented so they're not surprises:

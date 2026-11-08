@@ -79,7 +79,6 @@ arara doctor
 | `arara numbers` | Manage phone numbers |
 | `arara keys` | Manage API keys (list, create, revoke) |
 | `arara logs` | View message history and logs |
-| `arara listen` | Real-time message listener (webhooks) |
 | `arara status` | Live dashboard with auto-refresh (aliases: `dash`, `dashboard`) |
 | `arara config` | Configure CLI settings (list, set, get) |
 | `arara upgrade` | Update CLI to latest version |
@@ -99,7 +98,6 @@ The CLI includes a rich Terminal UI built with [Bubble Tea](https://github.com/c
 
 - Interactive message sending wizard (run `arara send` with no flags)
 - Live dashboard with auto-refresh every 30s (`arara status`)
-- Real-time message listener with live updates (`arara listen`)
 - Formatted output with colors and tables
 
 ### Secure Credential Storage
@@ -115,11 +113,7 @@ arara logs
 # Pretty JSON
 arara logs -o json
 
-# NDJSON (one event per line) — pipe to jq, datadog, etc
-arara listen -o stream-json | jq -r '.event'
-arara logs --follow | tee log.ndjson
-
-# Watch a single message via NDJSON (one line per state change)
+# Watch a single message via NDJSON (one line per state change) — pipe to jq, datadog, etc
 arara send --to +5511999999999 --template hello_world --watch -o stream-json
 ```
 

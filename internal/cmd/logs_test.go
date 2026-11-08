@@ -187,35 +187,7 @@ func TestRunLogsFetchImpl_ServerErrorReturnsError(t *testing.T) {
 	}
 }
 
-func TestRunLogs_RejectsTailAndFollowTogether(t *testing.T) {
-	originalTail := logsTailFlag
-	originalFollow := logsFollowFlag
-	t.Cleanup(func() {
-		logsTailFlag = originalTail
-		logsFollowFlag = originalFollow
-	})
-	logsTailFlag = true
-	logsFollowFlag = true
-
-	err := runLogs(nil, nil)
-	if err == nil {
-		t.Fatal("expected mutual exclusion error")
-	}
-	if !strings.Contains(err.Error(), "mutually exclusive") {
-		t.Errorf("error should mention conflict, got: %v", err)
-	}
-}
-
 func TestRunLogs_FetchPathUsesInjectedClient(t *testing.T) {
-	originalTail := logsTailFlag
-	originalFollow := logsFollowFlag
-	t.Cleanup(func() {
-		logsTailFlag = originalTail
-		logsFollowFlag = originalFollow
-	})
-	logsTailFlag = false
-	logsFollowFlag = false
-
 	body := `{"data":[{"id":"m","receiver":"+1","status":"sent","createdAt":"2026-01-01"}],"pagination":{}}`
 	_, client := fakeAPIServerJSON(t, http.StatusOK, body)
 	withFakeAPIClient(t, client)

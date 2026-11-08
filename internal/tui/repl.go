@@ -762,9 +762,6 @@ func (repl REPLModel) dispatchAction(action Action) (tea.Model, tea.Cmd) {
 	case ActionShowConfig:
 		repl.appendOutput(repl.renderConfig())
 		return repl, nil
-	case ActionShowListenHint:
-		repl.appendOutput(renderListenHint())
-		return repl, nil
 	case ActionRunSend:
 		return repl.runAsync("send", repl.executeSendCommand(action.Args))
 	case ActionRunTemplates:
@@ -935,9 +932,6 @@ func renderHelpText() string {
 	lines = append(lines, cmd("keys create <mode>", "Create new API key"))
 	lines = append(lines, cmd("numbers", "Registered phone numbers"))
 	lines = append(lines, cmd("whoami", "Current profile and mode"))
-	lines = append(lines, "")
-	lines = append(lines, sectionSep("Realtime"))
-	lines = append(lines, cmd("listen", "Stream webhook events (SSE)"))
 	lines = append(lines, "")
 	lines = append(lines, sectionSep("Tools"))
 	lines = append(lines, cmd("config", "Show configuration"))
@@ -1744,22 +1738,6 @@ func (repl REPLModel) executeBalanceCommand() tea.Cmd {
 
 		return commandResultMsg{output: "\n" + card.Render(content) + "\n"}
 	}
-}
-
-// ── /listen hint ─────────────────────────────────────────────────
-
-func renderListenHint() string {
-	card := sCard.Width(55)
-
-	content := sBold.Render("Webhook Listener") + "\n\n" +
-		sMuted.Render("  The listener runs in full-screen mode.") + "\n" +
-		sMuted.Render("  Exit the REPL and run:") + "\n\n" +
-		sValue.Render("  arara listen") + "\n\n" +
-		sMuted.Render("  Options:") + "\n" +
-		sDim.Render("    --forward-to http://localhost:3000/webhook") + "\n" +
-		sDim.Render("    --events message.sent,message.delivered")
-
-	return "\n" + card.Render(content) + "\n"
 }
 
 // ── Not logged in ────────────────────────────────────────────────

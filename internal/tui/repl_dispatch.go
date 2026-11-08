@@ -16,7 +16,6 @@ const (
 	ActionShowWhoami
 	ActionShowConfig
 	ActionOpenDocs
-	ActionShowListenHint
 	ActionRunSend
 	ActionRunTemplates
 	ActionRunStatus
@@ -77,8 +76,6 @@ func ParseInput(rawInput string) Action {
 		return Action{Kind: ActionOpenDocs}
 	case "/config", "config":
 		return Action{Kind: ActionShowConfig}
-	case "/listen", "listen":
-		return Action{Kind: ActionShowListenHint}
 
 	case "/send", "send":
 		return Action{Kind: ActionRunSend, Args: commandArgs, RequiresAPIClient: true}
