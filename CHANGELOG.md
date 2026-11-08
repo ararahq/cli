@@ -5,6 +5,16 @@ All notable changes to the Arara CLI are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Removed
+
+- `arara listen` and telemetry. The `listen` command, the SSE event
+  stream client (`GET /v1/stream`), the capture listener client
+  (`/v1/cli/webhook-listeners`), `arara logs --tail`/`--follow`, the
+  REPL `/listen` hint, and `arara telemetry on|off|status` (with its
+  `POST /v1/cli/telemetry/events` sender) are gone.
+
 ## [0.2.0] - 2026-05-12
 
 ### Added
