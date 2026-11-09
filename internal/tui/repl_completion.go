@@ -31,7 +31,6 @@ var completionSuggestions = []string{
 	"whoami",
 	"config",
 	"docs",
-	"listen",
 	"clear",
 	"quit",
 	"exit",
@@ -51,7 +50,6 @@ var completionSuggestions = []string{
 	"/whoami",
 	"/config",
 	"/docs",
-	"/listen",
 	"/clear",
 	"/quit",
 }

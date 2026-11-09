@@ -27,7 +27,6 @@ func TestRunGenerateManpages_WritesAllCommands(t *testing.T) {
 		"arara.1",
 		"arara-doctor.1",
 		"arara-send.1",
-		"arara-listen.1",
 		"arara-logs.1",
 		"arara-completion.1",
 	}

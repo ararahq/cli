@@ -3,14 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sync"
-	"time"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
 	"github.com/ararahq/cli/internal/output"
-	"github.com/ararahq/cli/internal/telemetry"
 	"github.com/ararahq/cli/internal/tui"
 	"github.com/ararahq/cli/internal/version"
 )
@@ -30,12 +27,6 @@ var (
 	globalNoColor      bool
 )
 
-// commandStartTimes holds the wall-clock at which the current command's
-// PersistentPreRun fired, so PersistentPostRunE can compute durationMs
-// for telemetry. Keyed by *cobra.Command pointer in case sibling commands
-// somehow run concurrently inside a single process (REPL).
-var commandStartTimes sync.Map
-
 var rootCmd = &cobra.Command{
 	Use:           "arara",
 	Short:         "AraraHQ CLI \u2014 WhatsApp API Platform",
@@ -45,12 +36,7 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 	PersistentPreRun: func(command *cobra.Command, arguments []string) {
 		applyGlobalFlags()
-		commandStartTimes.Store(command, time.Now())
 		maybePrintOAuthNudge(command)
-	},
-	PersistentPostRunE: func(command *cobra.Command, arguments []string) error {
-		recordCommandTelemetry(command, 0)
-		return nil
 	},
 	RunE: func(command *cobra.Command, arguments []string) error {
 		if term.IsTerminal(int(os.Stdin.Fd())) {
@@ -61,33 +47,6 @@ var rootCmd = &cobra.Command{
 		fmt.Println()
 		return command.Help()
 	},
-}
-
-// recordCommandTelemetry enqueues an Event for the just-completed command
-// and flushes synchronously (with a short timeout) so the process can exit
-// without leaking events. exitCode=0 from PostRun; the wrapper layer in
-// Execute() rewrites it on error before flush.
-func recordCommandTelemetry(command *cobra.Command, exitCode int) {
-	recorder := resolveTelemetryRecorder()
-	if !recorder.Enabled() {
-		return
-	}
-
-	startedAtRaw, ok := commandStartTimes.LoadAndDelete(command)
-	if !ok {
-		return
-	}
-	startedAt, ok := startedAtRaw.(time.Time)
-	if !ok {
-		return
-	}
-
-	recorder.Record(telemetry.Event{
-		Command:    command.Name(),
-		ExitCode:   exitCode,
-		DurationMs: int(time.Since(startedAt).Milliseconds()),
-		CLIVersion: version.Version,
-	})
 }
 
 const helpTemplate = `{{with .Long}}{{. | trimTrailingWhitespaces}}{{end}}
@@ -120,21 +79,7 @@ func init() {
 func Execute() error {
 	registerDiscoveredPlugins(rootCmd)
 	registerDiscoveredCommands(rootCmd)
-	executeError := rootCmd.Execute()
-	flushTelemetryQuietly()
-	return executeError
-}
-
-// flushTelemetryQuietly drains the recorder on process exit. Errors are
-// swallowed (printed only in verbose mode) — telemetry never blocks exit.
-func flushTelemetryQuietly() {
-	recorder := resolveTelemetryRecorder()
-	if !recorder.Enabled() {
-		return
-	}
-	if flushErr := recorder.Flush(); flushErr != nil && IsVerbose() {
-		fmt.Fprintf(os.Stderr, "[telemetry] flush: %v\n", flushErr)
-	}
+	return rootCmd.Execute()
 }
 
 func applyGlobalFlags() {

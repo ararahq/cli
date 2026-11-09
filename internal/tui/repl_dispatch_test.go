@@ -42,8 +42,6 @@ func TestParseInput_BuiltinCommandsNoArgs(t *testing.T) {
 		"docs":    ActionOpenDocs,
 		"/config": ActionShowConfig,
 		"config":  ActionShowConfig,
-		"/listen": ActionShowListenHint,
-		"listen":  ActionShowListenHint,
 	}
 	for input, wantKind := range cases {
 		t.Run(input, func(t *testing.T) {

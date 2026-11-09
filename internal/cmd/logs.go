@@ -5,12 +5,10 @@ import (
 	"io"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
 	"github.com/ararahq/cli/internal/api"
 	"github.com/ararahq/cli/internal/output"
-	"github.com/ararahq/cli/internal/tui"
 )
 
 const (
@@ -24,24 +22,18 @@ const (
 )
 
 var (
-	logsTailFlag   bool
-	logsFollowFlag bool
-	logsLimitFlag  int
-	logsModeFlag   string
+	logsLimitFlag int
+	logsModeFlag  string
 )
 
 var logsCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "View recent messages or tail live events",
-	Long: "Fetch and display recent messages from the AraraHQ console.\n" +
-		"Use --tail for a scrollable TUI of live events.\n" +
-		"Use --follow to emit live events as NDJSON to stdout (pipe-friendly).",
-	RunE: runLogs,
+	Short: "View recent messages",
+	Long:  "Fetch and display recent messages from the AraraHQ console.",
+	RunE:  runLogs,
 }
 
 func init() {
-	logsCmd.Flags().BoolVar(&logsTailFlag, "tail", false, "stream live events via SSE in a TUI viewer")
-	logsCmd.Flags().BoolVarP(&logsFollowFlag, "follow", "f", false, "stream live events as NDJSON to stdout (script-friendly)")
 	logsCmd.Flags().IntVar(&logsLimitFlag, "limit", defaultLogsLimit, "number of recent messages to display")
 	logsCmd.Flags().StringVar(&logsModeFlag, "mode", "", "filter by mode (e.g., sandbox, production)")
 
@@ -49,10 +41,6 @@ func init() {
 }
 
 func runLogs(command *cobra.Command, arguments []string) error {
-	if logsTailFlag && logsFollowFlag {
-		return fmt.Errorf("--tail and --follow are mutually exclusive — pick one")
-	}
-
 	client, clientError := newClientForCmd()
 	if clientError != nil {
 		output.PrintError(fmt.Sprintf("Failed to create API client: %s", clientError.Error()))
@@ -61,37 +49,7 @@ func runLogs(command *cobra.Command, arguments []string) error {
 
 	client.SetVerbose(IsVerbose())
 
-	if logsFollowFlag {
-		return runLogsFollow(client)
-	}
-
-	if logsTailFlag {
-		return runLogsTail(client)
-	}
-
 	return runLogsFetch(client)
-}
-
-func runLogsFollow(client *api.Client) error {
-	return runListenStream(client, nil, "")
-}
-
-func runLogsTail(client *api.Client) error {
-	viewerConfig := tui.LogsViewerConfig{
-		Client: client,
-	}
-
-	viewerModel := tui.NewLogsViewer(viewerConfig)
-
-	program := tea.NewProgram(viewerModel, tea.WithAltScreen())
-
-	_, runError := program.Run()
-	if runError != nil {
-		output.PrintError(fmt.Sprintf("Logs viewer failed: %s", runError.Error()))
-		return runError
-	}
-
-	return nil
 }
 
 func runLogsFetch(client *api.Client) error {
