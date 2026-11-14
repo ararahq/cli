@@ -6,6 +6,8 @@
 
 The official command-line interface for [AraraHQ](https://ararahq.com). Send WhatsApp messages, manage templates, run campaigns, and monitor everything — right from your terminal.
 
+AraraHQ: WhatsApp for Brazilian companies. Team inbox with AI, campaigns and systems connected through the API.
+
 ## Installation
 
 ### One-liner (macOS / Linux)
