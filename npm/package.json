@@ -1,7 +1,7 @@
 {
   "name": "@ararahq/cli",
   "version": "0.0.0",
-  "description": "AraraHQ CLI — WhatsApp API Platform. This package downloads the matching native Go binary on install.",
+  "description": "Command-line interface for the AraraHQ API. This package downloads the matching native Go binary on install. AraraHQ: WhatsApp for Brazilian companies. Team inbox with AI, campaigns and systems connected through the API.",
   "bin": {
     "arara": "bin/arara"
   },
@@ -11,6 +11,8 @@
   "keywords": [
     "ararahq",
     "whatsapp",
+    "whatsapp-business",
+    "brazil",
     "cli",
     "messaging"
   ],

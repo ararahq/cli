@@ -43,7 +43,7 @@ brews:
     repository:
       owner: ararahq
       name: homebrew-tap
-    description: "AraraHQ CLI — WhatsApp API Platform"
+    description: "Command-line interface for the AraraHQ API"
     homepage: "https://github.com/ararahq/cli"
     license: "MIT"
     install: |
@@ -58,7 +58,7 @@ scoops:
     repository:
       owner: ararahq
       name: scoop-bucket
-    description: "AraraHQ CLI — WhatsApp API Platform"
+    description: "Command-line interface for the AraraHQ API"
     homepage: "https://github.com/ararahq/cli"
     license: "MIT"
 
@@ -110,7 +110,7 @@ nfpms:
     vendor: AraraHQ
     homepage: "https://github.com/ararahq/cli"
     maintainer: "AraraHQ <support@ararahq.com>"
-    description: "AraraHQ CLI — WhatsApp API Platform"
+    description: "Command-line interface for the AraraHQ API"
     license: MIT
     formats:
       - deb
